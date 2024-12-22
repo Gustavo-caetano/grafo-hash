@@ -31,6 +31,8 @@ void **inicializarHash()
 {
     void **hash;
     hash = (void**)malloc(TAMANHO_MAX * sizeof(void*));
+    if(hash == NULL) 
+        printf("array tabela hash nao inicializada\n");
 
     return hash;
 }
@@ -39,6 +41,8 @@ TabelaHash *inicializarTabela(int tamanho)
 {
     TabelaHash *tabelahashaux;
     tabelahashaux = (TabelaHash*)malloc(sizeof(TabelaHash));
+    if(tabelahashaux == NULL) 
+        printf("tabela hash nao inicializada\n");
 
     tabelahashaux->tamanho = tamanho;
     tabelahashaux->tabela = inicializarHash();
@@ -66,6 +70,17 @@ int chaveHash(int chave)
 
 bool inserirValor(int chave, void *valor)
 {
+    if(tabelahash == NULL) 
+    {
+        printf("tabela não inicializada");
+        return false;
+    }
+    if(tabelahash->tabela == NULL)
+    {
+        printf("array tabela não inicializada");
+        return false;
+    }
+
     int indiceInsercao = chaveHash(chave);
 
     while(tabelahash->tabela[indiceInsercao] != NULL) indiceInsercao++;
@@ -74,12 +89,13 @@ bool inserirValor(int chave, void *valor)
     // printf("inserindo no indice %d valor %d\n", indiceInsercao, (obterChave)(tabelahash->tabela[indiceInsercao]));
     tabelahash->tamanho++;
 
-        if(tabelahash->tamanho > TAMANHO_MAX / 2)
+    if(tabelahash->tamanho > TAMANHO_MAX / 2)
     {
-        printf("tabela aumentou\n");
+        // printf("tabela aumentou\n");
         expandirTabela();
     }
 
+    return  true;
 }
 
 bool inserirValorAux(TabelaHash *tabelahashAux, int chave, void *valor)
@@ -96,14 +112,16 @@ bool inserirValorAux(TabelaHash *tabelahashAux, int chave, void *valor)
 
 bool expandirTabela()
 {
+    int antigoTamanhoMaximo = TAMANHO_MAX;
     TAMANHO_MAX = encontrarPrimoProximo(2 * TAMANHO_MAX);
 
     TabelaHash *tabelaAux = inicializarTabela(tabelahash->tamanho);
 
-    for(int i = 0; i < tabelahash->tamanho; i++)
+    for(int i = 0; i < antigoTamanhoMaximo; i++)
     {
         if(tabelahash->tabela[i] != NULL)
-        {
+        {   
+            // printf("mudando o numero %d, novo hash %d \n", (obterChave)(tabelahash->tabela[i]),(obterChave)(tabelahash->tabela[i]));
             inserirValorAux(tabelaAux, (obterChave)(tabelahash->tabela[i]), tabelahash->tabela[i]);
         }
     }

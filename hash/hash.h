@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-typedef struct
+typedef struct TabelaHashStruct
 {
     void **tabela;
     int tamanho;
