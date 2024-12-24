@@ -12,6 +12,7 @@ typedef struct NoStruct
 } No;
 
 extern TabelaHash *grafo;
+extern int TAMANHO_MAX;
 
 void iniciandoFuncoes();
 No* inicializarNo(int vertice);
@@ -19,8 +20,11 @@ void iniciarGrafo();
 
 //crud
 bool adicionaVertice(int vertice);
+bool removeVertice(int vertice);
 bool adicionaAresta(int verticeA, int verticeB);
+bool removeAresta(int verticeA, int verticeB);
 bool adicionaArestaNoVertice(No *vertice, int aresta);
+bool removerArestaNoVertice(No* vertice, int aresta);
 
 //impressao
 void imprimirVertice(No* vertice);

@@ -5,6 +5,7 @@
 #include "hash.h"
 /// variaveis globais
 key obterChave = NULL;
+int TAMANHO_MAX = -1;
 
 bool ehPrimo(int numero)
 {
@@ -38,17 +39,12 @@ void **inicializarHash()
 TabelaHash *inicializarTabela(int tamanho)
 {
     TabelaHash *tabelaaux;
-    tabelaaux = (TabelaHash*)malloc(sizeof(TabelaHash));
+    tabelaaux = (TabelaHash*)calloc(1, sizeof(TabelaHash));
     if(tabelaaux == NULL) 
         printf("tabela hash nao inicializada\n");
 
     tabelaaux->tamanho = tamanho;
     tabelaaux->tabela = inicializarHash();
-
-    for(int i = 0; i < TAMANHO_MAX; i++)
-    {
-        tabelaaux->tabela[i] = NULL;
-    }
     
     return tabelaaux;
 } 

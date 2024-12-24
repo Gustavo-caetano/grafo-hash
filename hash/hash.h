@@ -11,7 +11,7 @@ typedef struct TabelaHashStruct
 
 typedef int (*key)(void* valor);
 
-static int TAMANHO_MAX = 7;
+extern int TAMANHO_MAX;
 
 //funcao pra obter chave
 extern key obterChave;
