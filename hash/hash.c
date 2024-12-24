@@ -5,8 +5,6 @@
 #include "hash.h"
 /// variaveis globais
 key obterChave = NULL;
-key comparaValor = NULL;
-TabelaHash *tabelahash = NULL;
 
 bool ehPrimo(int numero)
 {
@@ -39,26 +37,27 @@ void **inicializarHash()
 
 TabelaHash *inicializarTabela(int tamanho)
 {
-    TabelaHash *tabelahashaux;
-    tabelahashaux = (TabelaHash*)malloc(sizeof(TabelaHash));
-    if(tabelahashaux == NULL) 
+    TabelaHash *tabelaaux;
+    tabelaaux = (TabelaHash*)malloc(sizeof(TabelaHash));
+    if(tabelaaux == NULL) 
         printf("tabela hash nao inicializada\n");
 
-    tabelahashaux->tamanho = tamanho;
-    tabelahashaux->tabela = inicializarHash();
+    tabelaaux->tamanho = tamanho;
+    tabelaaux->tabela = inicializarHash();
 
     for(int i = 0; i < TAMANHO_MAX; i++)
     {
-        tabelahashaux->tabela[i] = NULL;
+        tabelaaux->tabela[i] = NULL;
     }
     
-    return tabelahashaux;
+    return tabelaaux;
 } 
 
-void limparTabela()
+void limparTabela(TabelaHash **tabela)
 {
-    free(tabelahash->tabela);
-    free(tabelahash);
+    free((*tabela)->tabela);
+    free(*tabela);
+    *tabela = NULL;
 }
 
 int chaveHash(int chave)
@@ -68,103 +67,113 @@ int chaveHash(int chave)
     return chavehash;
 }
 
-bool inserirValor(int chave, void *valor)
+bool inserirValor(TabelaHash **tabela, int chave, void *valor)
 {
-    if(tabelahash == NULL) 
+    if((*tabela) == NULL) 
     {
         printf("tabela não inicializada");
         return false;
     }
-    if(tabelahash->tabela == NULL)
+    if((*tabela)->tabela == NULL)
     {
         printf("array tabela não inicializada");
         return false;
     }
-
+    
     int indiceInsercao = chaveHash(chave);
 
-    while(tabelahash->tabela[indiceInsercao] != NULL) indiceInsercao++;
+    while((*tabela)->tabela[indiceInsercao] != NULL) indiceInsercao++;
 
-    tabelahash->tabela[indiceInsercao] = valor;
-    // printf("inserindo no indice %d valor %d\n", indiceInsercao, (obterChave)(tabelahash->tabela[indiceInsercao]));
-    tabelahash->tamanho++;
-
-    if(tabelahash->tamanho > TAMANHO_MAX / 2)
+    (*tabela)->tabela[indiceInsercao] = valor;
+    // printf("inserindo no indice %d valor %d\n", indiceInsercao, (obterChave)(tabela->tabela[indiceInsercao]));
+    (*tabela)->tamanho++;
+    if((*tabela)->tamanho > TAMANHO_MAX / 2)
     {
         // printf("tabela aumentou\n");
-        expandirTabela();
+        expandirTabela(tabela);
     }
 
     return  true;
 }
 
-bool inserirValorAux(TabelaHash *tabelahashAux, int chave, void *valor)
+bool redistribuiValores(TabelaHash *tabelaAux, int chave, void *valor)
 {
     int indiceInsercao = chaveHash(chave);
 
-    while(tabelahashAux->tabela[indiceInsercao] != NULL) indiceInsercao++;
+    while(tabelaAux->tabela[indiceInsercao] != NULL) indiceInsercao++;
 
-    tabelahashAux->tabela[indiceInsercao] = valor;
-    tabelahashAux->tamanho++;
+    tabelaAux->tabela[indiceInsercao] = valor;
 
     return true;
 }
 
-bool expandirTabela()
+bool expandirTabela(TabelaHash **tabela)
 {
     int antigoTamanhoMaximo = TAMANHO_MAX;
     TAMANHO_MAX = encontrarPrimoProximo(2 * TAMANHO_MAX);
 
-    TabelaHash *tabelaAux = inicializarTabela(tabelahash->tamanho);
+    TabelaHash *tabelaAux = inicializarTabela((*tabela)->tamanho);
 
     for(int i = 0; i < antigoTamanhoMaximo; i++)
     {
-        if(tabelahash->tabela[i] != NULL)
+        if((*tabela)->tabela[i] != NULL)
         {   
-            // printf("mudando o numero %d, novo hash %d \n", (obterChave)(tabelahash->tabela[i]),(obterChave)(tabelahash->tabela[i]));
-            inserirValorAux(tabelaAux, (obterChave)(tabelahash->tabela[i]), tabelahash->tabela[i]);
+            // printf("mudando o numero %d, novo hash %d \n", (obterChave)(tabela->tabela[i]),(obterChave)(tabela->tabela[i]));
+            redistribuiValores(tabelaAux, (obterChave)((*tabela)->tabela[i]), (*tabela)->tabela[i]);
         }
     }
+    limparTabela(tabela);
 
-    limparTabela();
-
-    tabelahash = tabelaAux;
-
+    *tabela = tabelaAux;
     return true;
 }
 
 
-bool removerValor(void *valor)
-{
-    int indiceHash = chaveHash((obterChave)(valor));
-    
-    while(tabelahash->tabela[indiceHash] != NULL &&  !(comparaValor)(tabelahash->tabela[indiceHash]))
-        indiceHash++;
-
-    if(tabelahash->tabela[indiceHash] == NULL) return false;
-
-    tabelahash->tabela[indiceHash] = NULL;
-
-    return true;
-}
-
-void* buscarValor(int chave)
+bool removerValor(TabelaHash *tabela, int chave)
 {
     int indiceHash = chaveHash(chave);
-
-    while(tabelahash->tabela[indiceHash] != NULL && chave != (obterChave)(tabelahash->tabela[indiceHash]))
+    
+    while(tabela->tabela[indiceHash] != NULL &&  (obterChave)(tabela->tabela[indiceHash]) != chave)
         indiceHash++;
+
+    if(tabela->tabela[indiceHash] == NULL) return false;
+
+    tabela->tabela[indiceHash] = NULL;
+
+    return true;
+}
+
+void* buscarValor(TabelaHash *tabelahash, int chave)
+{
+    if(tabelahash == NULL || tabelahash->tabela == NULL)
+    {
+        printf("tabela nao iniciada");
+        return NULL;
+    }
+    if(obterChave == NULL)
+    {
+        printf("funcao nao iniciada");
+        return NULL;
+    }
+    int indiceHash = chaveHash(chave);
+
+    while(indiceHash < TAMANHO_MAX && tabelahash->tabela[indiceHash] != NULL  && chave != (obterChave)(tabelahash->tabela[indiceHash]))
+    {
+        indiceHash++;
+    }
+    
+    if(indiceHash == TAMANHO_MAX) return NULL;
     
     return tabelahash->tabela[indiceHash];
 }
 
-void printarTabela()
+void printarTabela(TabelaHash *tabela)
 {
     for(int i = 0; i < TAMANHO_MAX; i++)
     {
-        if(tabelahash->tabela[i] != NULL)
+        if(tabela->tabela[i] != NULL)
         {
-            printf("indice %d valor %d\n", i, (obterChave)(tabelahash->tabela[i]));
+            printf("indice %d valor %d\n", i, (obterChave)(tabela->tabela[i]));
         }
     }
 }

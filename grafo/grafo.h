@@ -11,6 +11,8 @@ typedef struct NoStruct
     int qtdArestas;
 } No;
 
+extern TabelaHash *grafo;
+
 void iniciandoFuncoes();
 No* inicializarNo(int vertice);
 void iniciarGrafo();

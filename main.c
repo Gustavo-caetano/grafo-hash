@@ -2,17 +2,14 @@
 #include <stdlib.h>
 #include "grafo/grafo.h"
 
-
 int main()
 {
     iniciarGrafo();
-
     
-    for(int i = 1; i < 9; i++)
-    {
+    for(int i = 1; i < 10; i++)
+    {   
         adicionaVertice(i);
     }
-    
     adicionaAresta(1, 2);
     adicionaAresta(1, 3);
 

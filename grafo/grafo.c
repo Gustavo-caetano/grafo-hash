@@ -2,10 +2,17 @@
 #include <stdio.h>
 #include "grafo.h"
 
+//variaveis globais
+TabelaHash *grafo = NULL;
+
 int obterChaveGrafo(void *valor)
 {
+    if(valor == NULL)
+    {
+        return -1;
+    } 
     No *noAux = (No *)valor;
-
+    
     return noAux->vertice;
 }
 
@@ -30,17 +37,17 @@ No *inicializarNo(int vertice)
 void iniciarGrafo()
 {
     iniciandoFuncoes();
-    tabelahash = inicializarTabela(0);
+    grafo = inicializarTabela(0);
 }
 
 bool adicionaVertice(int vertice)
 {
-    if (buscarValor(vertice) != NULL)
+    if (buscarValor(grafo, vertice) != NULL)
         return false;
 
     No *novoVertice = inicializarNo(vertice);
 
-    inserirValor(vertice, novoVertice);
+    inserirValor(&grafo, vertice, novoVertice);
 
     return true;
 }
@@ -58,8 +65,8 @@ bool buscarAresta(No *vertice, int aresta)
 
 bool adicionaAresta(int verticeA, int verticeB)
 {
-    No *noVerticeA = buscarValor(verticeA);
-    No *noVerticeB = buscarValor(verticeB);
+    No *noVerticeA = buscarValor(grafo, verticeA);
+    No *noVerticeB = buscarValor(grafo, verticeB);
 
     if (noVerticeA == NULL || noVerticeB == NULL)
     {
@@ -105,9 +112,9 @@ void ehEuleriano()
 
     for (int i = 0; i < TAMANHO_MAX; i++)
     {
-        if (tabelahash->tabela[i] != NULL)
+        if (grafo->tabela[i] != NULL)
         {
-            No *vertice = (No *)tabelahash->tabela[i];
+            No *vertice = (No *)grafo->tabela[i];
             if (vertice->qtdArestas % 2 != 0)
             {
                 eheuleriano = false;
@@ -130,18 +137,18 @@ void caminhoHamiltoniano()
 {
     bool ehhamiltoniano = true;
 
-    if (tabelahash->tamanho < 3)
+    if (grafo->tamanho < 3)
     {
         ehhamiltoniano = false;
     }
     else
     {
-        int corte = tabelahash->tamanho / 2;
+        int corte = grafo->tamanho / 2;
         for (int i = 0; i < TAMANHO_MAX; i++)
         {
-            if (tabelahash->tabela[i] != NULL)
+            if (grafo->tabela[i] != NULL)
             {
-                No *vertice = (No *)tabelahash->tabela[i];
+                No *vertice = (No *)grafo->tabela[i];
                 if (vertice->qtdArestas < corte)
                 {
                     ehhamiltoniano = false;
@@ -157,7 +164,7 @@ void caminhoHamiltoniano()
     }
     else
     {
-        printf("o grafo nao eh hamiltonianoS\n");
+        printf("o grafo nao eh hamiltoniano\n");
     }
 }
 
@@ -176,9 +183,9 @@ void imprimirGrafo()
 {
     for (int i = 0; i < TAMANHO_MAX; i++)
     {
-        if (tabelahash->tabela[i] != NULL)
+        if (grafo->tabela[i] != NULL)
         {
-            imprimirVertice((No *)tabelahash->tabela[i]);
+            imprimirVertice((No *)grafo->tabela[i]);
         }
     }
 }

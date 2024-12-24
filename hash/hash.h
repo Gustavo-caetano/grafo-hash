@@ -12,12 +12,10 @@ typedef struct TabelaHashStruct
 typedef int (*key)(void* valor);
 
 static int TAMANHO_MAX = 7;
-extern TabelaHash *tabelahash;
 
 //funcao pra obter chave
 extern key obterChave;
 
-extern key comparaValor;
 
 //funcoes matematicas
 int encontrarPrimoProximo(int numero);
@@ -28,14 +26,14 @@ bool ehPrimo(int numero);
 void **inicializarHash();
 TabelaHash *inicializarTabela(int tamanho);
 int chaveHash(int chave);
-bool expandirTabela();
+bool expandirTabela(TabelaHash **tabela);
 
 //crud
-bool inserirValor(int chave, void *valor);
-bool removerValor(void *valor);
-void* buscarValor(int chave);
+bool inserirValor(TabelaHash **tabela, int chave, void *valor);
+bool removerValor(TabelaHash *tabela, int chave);
+void* buscarValor(TabelaHash *tabela, int chave);
 // bool atualizarValor(int chave, void* valor);
 
-void printarTabela();
+void printarTabela(TabelaHash *tabela);
 
 #endif /* !HASH_H_ */
