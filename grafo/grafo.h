@@ -4,10 +4,15 @@
 #include <stdbool.h>
 #include "../hash/hash.h"
 
+typedef struct {
+    int verticeAresta;
+    bool marcado;
+} Aresta;
+
 typedef struct NoStruct
 {
     int vertice;
-    int* arestas;
+    Aresta* arestas;
     int qtdArestas;
 } No;
 
@@ -25,15 +30,16 @@ bool adicionaAresta(int verticeA, int verticeB);
 bool removeAresta(int verticeA, int verticeB);
 bool adicionaArestaNoVertice(No *vertice, int aresta);
 bool removerArestaNoVertice(No* vertice, int aresta);
+No* buscaVertice(int vertice);
 
 //impressao
 void imprimirVertice(No* vertice);
 void imprimirGrafo();
 
 //informacoes do grafo
-void ehEuleriano();
+bool ehEuleriano();
 void caminhoHamiltoniano();
-
+void hierholzer();
 
 
 #endif /* !GRAFO_H_ */

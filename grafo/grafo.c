@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 #include "grafo.h"
+#include "../pilha/pilha.h"
 
 // variaveis globais
 TabelaHash *grafo = NULL;
@@ -53,11 +55,18 @@ bool adicionaVertice(int vertice)
     return true;
 }
 
+No *buscaVertice(int vertice)
+{
+    No *verticeEncontrado = buscarValor(grafo, vertice);
+
+    return verticeEncontrado;
+}
+
 bool buscarAresta(No *vertice, int aresta)
 {
     for (int i = 0; i < vertice->qtdArestas; i++)
     {
-        if (aresta == vertice->arestas[i])
+        if (aresta == vertice->arestas[i].verticeAresta)
             return true;
     }
 
@@ -92,22 +101,25 @@ bool adicionaArestaNoVertice(No *vertice, int aresta)
 
     if (vertice->qtdArestas == 0)
     {
-        vertice->arestas = (int *)malloc(5 * sizeof(int));
+        vertice->arestas = (Aresta *)malloc(5 * sizeof(Aresta));
     }
     else if (vertice->qtdArestas % 5 == 0)
     {
         int quantidade = (vertice->qtdArestas / 5 + 1) * 5;
-        vertice->arestas = (int *)realloc(vertice->arestas, quantidade * sizeof(int));
+        vertice->arestas = (Aresta *)realloc(vertice->arestas, quantidade * sizeof(Aresta));
     }
 
     if (vertice->arestas == NULL)
         return false;
 
-    while(indiceAresta < vertice->qtdArestas && vertice->arestas[indiceAresta] != -1) indiceAresta++;
+    while (indiceAresta < vertice->qtdArestas && vertice->arestas[indiceAresta].verticeAresta != -1)
+        indiceAresta++;
 
-    if(indiceAresta == vertice->qtdArestas) vertice->qtdArestas++;
+    if (indiceAresta == vertice->qtdArestas)
+        vertice->qtdArestas++;
 
-    vertice->arestas[indiceAresta] = aresta;
+    vertice->arestas[indiceAresta].verticeAresta = aresta;
+    vertice->arestas[indiceAresta].marcado = false;
     return true;
 }
 
@@ -116,9 +128,9 @@ bool removerArestaNoVertice(No *vertice, int aresta)
     bool removido = false;
     for (int i = 0; i < vertice->qtdArestas; i++)
     {
-        if (vertice->arestas[i] != -1 && vertice->arestas[i] == aresta)
+        if (vertice->arestas[i].verticeAresta != -1 && vertice->arestas[i].verticeAresta == aresta)
         {
-            vertice->arestas[i] = -1;
+            vertice->arestas[i].verticeAresta = -1;
             removido = true;
             break;
         }
@@ -158,9 +170,9 @@ bool removeVertice(int vertice)
 
     for (int i = 0; i < noVertice->qtdArestas; i++)
     {
-        if (noVertice->arestas[i] != -1)
+        if (noVertice->arestas[i].verticeAresta != -1)
         {
-            noVerticeAux = buscarValor(grafo, noVertice->arestas[i]);
+            noVerticeAux = buscarValor(grafo, noVertice->arestas[i].verticeAresta);
             removerArestaNoVertice(noVerticeAux, vertice);
         }
     }
@@ -169,7 +181,7 @@ bool removeVertice(int vertice)
     return true;
 }
 
-void ehEuleriano()
+bool ehEuleriano()
 {
     bool eheuleriano = true;
 
@@ -194,6 +206,8 @@ void ehEuleriano()
     {
         printf("o grafo nao eh euleriano\n");
     }
+
+    return eheuleriano;
 }
 
 void caminhoHamiltoniano()
@@ -231,21 +245,117 @@ void caminhoHamiltoniano()
     }
 }
 
+int indiceArestaDesmarcada(No *vertice)
+{
+    for (int i = 0; i < vertice->qtdArestas; i++)
+    {
+        if (!vertice->arestas[i].marcado)
+        {
+            // return vertice->arestas[i].verticeAresta;
+            return i;
+        }
+
+        // printf("vertice %d aresta %d marcado %d\n",vertice->vertice ,vertice->arestas[i].verticeAresta, vertice->arestas[i].marcado);
+    }
+
+    return -1;
+}
+
+int indiceArestaVertice(No *vertice, int aresta)
+{
+    for (int i = 0; i < vertice->qtdArestas; i++)
+    {
+        if (vertice->arestas[i].verticeAresta == aresta)
+            return i;
+    }
+
+    return -1;
+}
+
+void visitarAresta(No *vertice, int indicearesta)
+{
+    // printf("%d - %d\n",vertice->vertice, vertice->arestas[indicearesta].verticeAresta);
+    vertice->arestas[indicearesta].marcado = true;
+}
+
+int retornaVerticeDaAresta(No *vertice, int indicearesta)
+{
+    return vertice->arestas[indicearesta].verticeAresta;
+}
+
+void imprimirNo(void *valor)
+{
+
+    printf("%d ", obterChaveGrafo(valor));
+}
+
+void hierholzer()
+{
+    if (!ehEuleriano())
+        return;
+
+    srand(time(NULL));
+
+    int verticeAtual = rand() % grafo->tamanho;
+    // int verticeAtual = 0;
+
+    Pilha *S = inicializaPilha();
+    Pilha *T = inicializaPilha();
+
+    funcaoImpressao = imprimirNo;
+
+    push(S, buscaVertice(verticeAtual));
+
+    while (S->quantidade != 0)
+    {   
+        No *noVerticeAtual = buscaVertice(verticeAtual);
+        int indicearestaDesmarcada = indiceArestaDesmarcada(noVerticeAtual);
+
+        if (indicearestaDesmarcada != -1)
+        {
+            visitarAresta(noVerticeAtual, indicearestaDesmarcada); // visita na ida
+
+            No *verticeVisitado = buscaVertice(retornaVerticeDaAresta(noVerticeAtual, indicearestaDesmarcada));
+
+            visitarAresta(verticeVisitado, indiceArestaVertice(verticeVisitado, verticeAtual)); // visita na volta
+
+            verticeAtual = retornaVerticeDaAresta(noVerticeAtual, indicearestaDesmarcada);
+
+            push(S, verticeVisitado);
+        }
+        else
+        {
+            No *no = (No *)pop(S);
+            if(S->quantidade > 0)
+            {
+                No *topo = (No *)S->topo->valor;
+                verticeAtual = topo->vertice;
+            }
+            push(T, no);
+        }
+    }
+
+    printf("caminho encontrado\n");
+    imprimirPilha(T);
+    limparPilha(S);
+    limparPilha(T);
+}
+
 void imprimirVertice(No *vertice)
 {
     printf("%d -> ", vertice->vertice);
 
     for (int i = 0; i < vertice->qtdArestas; i++)
-    {   
-        if(vertice->arestas[i] != -1)
-            printf("%d ", vertice->arestas[i]);
+    {
+        if (vertice->arestas[i].verticeAresta != -1)
+            printf("%d ", vertice->arestas[i].verticeAresta);
     }
 
     printf("\n");
 }
 
 void imprimirGrafo()
-{   
+{
     for (int i = 0; i < TAMANHO_MAX; i++)
     {
         if (grafo->tabela[i] != NULL)
